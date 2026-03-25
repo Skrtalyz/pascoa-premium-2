@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bella Donna Loja Oficial</title>
+    <script>
+      // Patch JSON.stringify to handle circular structures and cross-origin Window objects
+      (function() {
+        const originalStringify = JSON.stringify;
+        JSON.stringify = function(value, replacer, space) {
+          const cache = new Set();
+          return originalStringify(value, function(key, val) {
+            try {
+              if (typeof val === 'object' && val !== null) {
+                // Safely check if the object is a Window or restricted cross-origin object
+                // Accessing properties on cross-origin windows throws an error
+                if (val === window || (typeof val.window !== 'undefined' && val.window === val)) {
+                  return '[Window]';
+                }
+                if (cache.has(val)) return;
+                cache.add(val);
+              }
+              return replacer ? replacer(key, val) : val;
+            } catch (e) {
+              // If we hit a cross-origin restriction or any other error during traversal
+              return '[Restricted]';
+            }
+          }, space);
+        };
+      })();
+
+      window.pixelId = "69c212c4ffba253af5b6d879";
+      var a = document.createElement("script");
+      a.setAttribute("async", "");
+      a.setAttribute("defer", "");
+      a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+      document.head.appendChild(a);
+    </script>
+    <script
+      src="https://cdn.utmify.com.br/scripts/utms/latest.js"
+      data-utmify-prevent-xcod-sck
+      data-utmify-prevent-subids
+      async
+      defer
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
