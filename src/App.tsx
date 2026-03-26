@@ -33,6 +33,8 @@ import { motion, AnimatePresence } from 'motion/react';
 
 // --- Components ---
 
+const CACHE_BUSTER = new Date().getTime();
+
 const appendUrlParams = (url: string) => {
   if (typeof window === 'undefined') return url;
   const search = window.location.search;
@@ -276,12 +278,9 @@ export default function App() {
         <div className="grid lg:grid-cols-12 gap-12">
           {/* Left Column: Image Gallery */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="bg-stone-50 rounded-lg overflow-hidden border border-stone-100 relative min-h-[300px] flex items-center justify-center">
-              <motion.img 
-                key={mainImage}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                src={mainImage} 
+            <div className="bg-stone-50 rounded-lg overflow-hidden border border-stone-100 relative min-h-[300px] md:h-[600px] flex items-center justify-center">
+              <img 
+                src={`${mainImage}${mainImage.includes('?') ? '&' : '?'}v=${CACHE_BUSTER}`} 
                 alt="Combo Bella Donna" 
                 className="max-w-full max-h-full block"
                 fetchPriority="high"
@@ -292,15 +291,16 @@ export default function App() {
             <div className="grid grid-cols-4 gap-4">
               {thumbnails.map((thumb, i) => (
                 <button 
-                  key={`thumb-${i}`}
+                  key={i}
                   type="button"
                   onClick={() => handleImageSelect(thumb)}
-                  className={`relative rounded-md overflow-hidden border-2 transition-all aspect-square bg-stone-50 flex items-center justify-center ${mainImage === thumb ? 'border-brand-pink' : 'border-transparent hover:border-stone-200'}`}
+                  className={`relative rounded-md overflow-hidden border-2 transition-all bg-stone-50 flex items-center justify-center w-full h-20 sm:h-24 md:h-32 ${mainImage === thumb ? 'border-brand-pink' : 'border-transparent hover:border-stone-200'}`}
                 >
                   <img 
-                    src={thumb} 
+                    src={`${thumb}${thumb.includes('?') ? '&' : '?'}v=${CACHE_BUSTER}`} 
                     alt="" 
                     className="max-w-full max-h-full object-contain block" 
+                    loading="eager"
                   />
                 </button>
               ))}
