@@ -38,17 +38,22 @@ const CACHE_BUSTER = new Date().getTime();
 const appendUrlParams = (url: string) => {
   if (typeof window === 'undefined') return url;
   const search = window.location.search;
-  if (!search || url === '#' || url.startsWith('javascript:') || url.startsWith('tel:') || url.startsWith('mailto:')) return url;
+  if (!search || !url || url === '#' || url.startsWith('javascript:') || url.startsWith('tel:') || url.startsWith('mailto:')) return url;
   
-  const cleanSearch = search.startsWith('?') ? search.substring(1) : search;
-  const urlObj = new URL(url.startsWith('http') ? url : window.location.origin + (url.startsWith('/') ? url : '/' + url));
-  
-  const params = new URLSearchParams(cleanSearch);
-  params.forEach((value, key) => {
-    urlObj.searchParams.set(key, value);
-  });
-  
-  return urlObj.toString();
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : window.location.origin + (url.startsWith('/') ? url : '/' + url));
+    const currentParams = new URLSearchParams(search);
+    
+    currentParams.forEach((value, key) => {
+      urlObj.searchParams.set(key, value);
+    });
+    
+    // Se a URL original era relativa, tenta retornar relativa se possível, 
+    // mas para links externos (checkout) retornará absoluta corretamente.
+    return urlObj.toString();
+  } catch (e) {
+    return url;
+  }
 };
 
 const CustomVideoPlayer = ({ src }: { src: string }) => {
@@ -219,16 +224,16 @@ export default function App() {
       links.forEach(link => {
         const url = link.getAttribute('href');
         if (url && !url.startsWith('#') && !url.startsWith('javascript:') && !url.startsWith('tel:') && !url.startsWith('mailto:')) {
-          const cleanSearch = search.startsWith('?') ? search.substring(1) : search;
-          if (!url.includes(cleanSearch)) {
-            const separator = url.includes('?') ? '&' : '?';
-            link.setAttribute('href', `${url}${separator}${cleanSearch}`);
+          const newUrl = appendUrlParams(url);
+          if (newUrl !== url && link.getAttribute('href') !== newUrl) {
+            link.setAttribute('href', newUrl);
           }
         }
       });
     };
 
     updateLinks();
+    // Observer para capturar links adicionados dinamicamente
     const observer = new MutationObserver(updateLinks);
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
